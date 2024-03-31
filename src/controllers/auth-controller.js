@@ -215,18 +215,22 @@ const refreshAccessToken=asyncHandler(async (req,res)=>{
 
 const changeCurrentPassword =asyncHandler(
   async (req,res)=>{
-    const {oldpasssword,newPassword}=req.body
+    const {oldpassword,newPassword}=req.body
     const user= await User.findById(req.user?._id)
     if (!user){
       throw new apiError(400,"user not found ! please login again")
     }
 
-    // check passsword functionality
+    // const isPasswordCorrect=await user.isPasswordCorrect(oldpassword)
 
-    // const validify= await changeHashPassword(newPassword,user.password)
-    // if (!validify){
-    //   throw new apiError(200,"please write new password")
-    // }
+    const validify= await changeHashPassword(newPassword,user.password)
+    if (validify){
+      throw new apiError(200,"please write new password")
+    }
+
+
+
+
     user.password=newPassword
     console.log(user)
     await user.save({validateBeforeSave:true})

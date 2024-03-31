@@ -6,6 +6,9 @@ import { apiResponse } from "../utils/apiResponse.js";
 import { apiError } from "../utils/apiError.js";
 import { json } from "express";
 import jwt from "jsonwebtoken";
+import {changeHashPassword} from "../utils/changeHashPassword.js";
+
+
 
 const home = (req, res) => {
   res.json({ msg: "this is working at all" });
@@ -210,4 +213,26 @@ const refreshAccessToken=asyncHandler(async (req,res)=>{
   ))
 })
 
-export { home, register, login, logout, refreshAccessToken };
+const changeCurrentPassword =asyncHandler(
+  async (req,res)=>{
+    const {oldpasssword,newPassword}=req.body
+    const user= await User.findById(req.user?._id)
+    if (!user){
+      throw new apiError(400,"user not found ! please login again")
+    }
+
+    // check passsword functionality
+
+    // const validify= await changeHashPassword(newPassword,user.password)
+    // if (!validify){
+    //   throw new apiError(200,"please write new password")
+    // }
+    user.password=newPassword
+    console.log(user)
+    await user.save({validateBeforeSave:true})
+
+    return res.json(new apiResponse(200,{},"your password is reset sucessfully"))
+  }
+)
+
+export { home, register, login, logout, refreshAccessToken, changeCurrentPassword };

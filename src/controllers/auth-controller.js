@@ -248,6 +248,11 @@ const getCurrentUser=asyncHandler(async (req,res)=>{
 
 const uploadAccountDetails=asyncHandler(async (req,res)=>{
   const {fullname,email,username}=req.body
+ 
+  if (!fullname || !email || !username){
+    throw new apiError(400,"all field are required")
+  }
+
   const user =await User.findByIdAndUpdate(
     req.user?._id,
     {
@@ -267,4 +272,56 @@ const uploadAccountDetails=asyncHandler(async (req,res)=>{
 
 })
 
-export { home, register, login, logout, refreshAccessToken, changeCurrentPassword,getCurrentUser,  uploadAccountDetails};
+const updateAvatar=asyncHandler(async (req,res)=>{
+  const avatarLocalPath= req.file?.avatar[0]?.path
+  if (!avatarLocalPath){
+    throw new apiError(200,"uploading of avatar is failed")
+  }
+  const avatarPath=await uploadfile(avatarLocalPath)
+
+  if (!avatarPath){
+    throw new apiError(200,"uploading of avatar is failed again")
+  }
+
+  const user=await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set:{
+        avatar:avatarPath
+      }
+    },
+    {
+      new:true
+    }
+    ).select("-password -refreshToken")
+
+    return res.status(200).json(new apiResponse(200,{user:user.avatar},"updated avatar successfully"))
+})
+
+const updateCoverImage=asyncHandler(async (req,res)=>{
+  const coverImageLocalPath= req.file?.avatar[0]?.path
+  if (!coverImageLocalPath){
+    throw new apiError(200,"uploading of avatar is failed")
+  }
+  const coverImagePath=await uploadfile(avatarLocalPath)
+
+  if (!coverImagePath){
+    throw new apiError(200,"uploading of avatar is failed again")
+  }
+
+  const user=await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set:{
+        coverImage:coverImagePath
+      }
+    },
+    {
+      new:true
+    }
+    ).select("-password -refreshToken")
+
+    return res.status(200).json(new apiResponse(200,{user:user.avatar},"updated avatar successfully"))
+})
+
+export { home, register, login, logout, refreshAccessToken, changeCurrentPassword,getCurrentUser,  uploadAccountDetails, updateAvatar};

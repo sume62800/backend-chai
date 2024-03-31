@@ -239,4 +239,32 @@ const changeCurrentPassword =asyncHandler(
   }
 )
 
-export { home, register, login, logout, refreshAccessToken, changeCurrentPassword };
+const getCurrentUser=asyncHandler(async (req,res)=>{
+  const currentUser=await User.findById(req.user?._id).select("-password -refreshToken")
+
+  return res.json(new apiResponse(200,{user:currentUser},"this is current user info"))
+
+})
+
+const uploadAccountDetails=asyncHandler(async (req,res)=>{
+  const {fullname,email,username}=req.body
+  const user =await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set:{
+        fullname,
+        email,
+        username
+      }
+    },
+    {
+      new:true
+    }
+    ).select("-password -refreshToken")
+
+    return res.status(200).json( new apiResponse(200,{user},"updated data successfully"))
+
+
+})
+
+export { home, register, login, logout, refreshAccessToken, changeCurrentPassword,getCurrentUser,  uploadAccountDetails};

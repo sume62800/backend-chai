@@ -30,5 +30,4 @@ router.post('/updateaccount',verifyJWT,uploadAccountDetails)
 router.post('/updateAvatar',verifyJWT,upload.fields([{name:"avatar",maxCount:1}]),updateAvatar)
 router.post('/updateCoverImage',verifyJWT,upload.fields([{name:"coverImage",maxCount:1}]),updateCoverImage)
 
-
 export {router};

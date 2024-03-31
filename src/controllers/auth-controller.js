@@ -273,7 +273,7 @@ const uploadAccountDetails=asyncHandler(async (req,res)=>{
 })
 
 const updateAvatar=asyncHandler(async (req,res)=>{
-  const avatarLocalPath= req.file?.avatar[0]?.path
+  const avatarLocalPath= req.file?.path
   if (!avatarLocalPath){
     throw new apiError(200,"uploading of avatar is failed")
   }
@@ -299,7 +299,7 @@ const updateAvatar=asyncHandler(async (req,res)=>{
 })
 
 const updateCoverImage=asyncHandler(async (req,res)=>{
-  const coverImageLocalPath= req.file?.avatar[0]?.path
+  const coverImageLocalPath= req.file?.path
   if (!coverImageLocalPath){
     throw new apiError(200,"uploading of avatar is failed")
   }
@@ -324,4 +324,14 @@ const updateCoverImage=asyncHandler(async (req,res)=>{
     return res.status(200).json(new apiResponse(200,{user:user.avatar},"updated avatar successfully"))
 })
 
-export { home, register, login, logout, refreshAccessToken, changeCurrentPassword,getCurrentUser,  uploadAccountDetails, updateAvatar};
+export { home, 
+  register,
+   login,
+   logout,
+   refreshAccessToken,
+   changeCurrentPassword,
+   getCurrentUser,
+   uploadAccountDetails,
+   updateAvatar,
+   updateCoverImage
+  };

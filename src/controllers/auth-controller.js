@@ -7,6 +7,7 @@ import { apiError } from "../utils/apiError.js";
 import { json } from "express";
 import jwt from "jsonwebtoken";
 import {changeHashPassword} from "../utils/changeHashPassword.js";
+import { deleteAsset } from "../utils/deleteService.js";
 
 
 
@@ -279,15 +280,17 @@ const updateAvatar=asyncHandler(async (req,res)=>{
   }
   const avatarPath=await uploadfile(avatarLocalPath)
 
-  if (!avatarPath){
+  if (!avatarPath.url){
     throw new apiError(200,"uploading of avatar is failed again")
   }
+  //delete the previous image
+  const deleteImage= await deleteAsset(req.user?.avatar)
 
   const user=await User.findByIdAndUpdate(
     req.user?._id,
     {
       $set:{
-        avatar:avatarPath
+        avatar:avatarPath.url
       }
     },
     {
@@ -295,7 +298,7 @@ const updateAvatar=asyncHandler(async (req,res)=>{
     }
     ).select("-password -refreshToken")
 
-    return res.status(200).json(new apiResponse(200,{user:user.avatar},"updated avatar successfully"))
+    return res.status(200).json(new apiResponse(200,{data:deleteImage,user:user.avatar},"updated avatar successfully"))
 })
 
 const updateCoverImage=asyncHandler(async (req,res)=>{
@@ -305,7 +308,7 @@ const updateCoverImage=asyncHandler(async (req,res)=>{
   }
   const coverImagePath=await uploadfile(avatarLocalPath)
 
-  if (!coverImagePath){
+  if (!coverImagePath.url){
     throw new apiError(200,"uploading of avatar is failed again")
   }
 
@@ -313,7 +316,7 @@ const updateCoverImage=asyncHandler(async (req,res)=>{
     req.user?._id,
     {
       $set:{
-        coverImage:coverImagePath
+        coverImage:coverImagePath.url
       }
     },
     {

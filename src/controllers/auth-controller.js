@@ -327,6 +327,73 @@ const updateCoverImage=asyncHandler(async (req,res)=>{
     return res.status(200).json(new apiResponse(200,{user:user.avatar},"updated avatar successfully"))
 })
 
+const getUserProfileInfo=asyncHandler(async (req,res)=>{
+  const username= req.params
+  if(!username){
+    throw new apiError(400,"username is not found")
+  }
+  const channel=await User.aggregate([
+    {
+      $match:{
+        username:username
+      }
+    },
+    {
+      $lookup:{
+        from:"subscriptions",
+        localField:"_id",
+        foreignField:"channel",
+        as:"subscribers"
+      }
+    },
+    {
+      $lookup:{
+        from:"subscriptions",
+        localField:"_id",
+        foreignField:"subscriber",
+        as:"subscribedTo"
+      }
+    },
+    {
+      $addFields:{
+        subscribersCount:{
+          $size:"$subscribers"
+        },
+        channelsSubscribedToCount:{
+          $size:"$subscribedTo"
+        },
+        isSubscribed:{
+          $cond:{
+            if:{$in:[req.user?._id,"$subscribers.subscriber"]},
+            then:true,
+            else:false
+          }
+        }
+      }
+    },
+    {
+      $project:{
+        fullname:1,
+        email:1,
+        username:1,
+        subscribersCount:1,
+        channelsSubscribedToCount:1,
+        isSubscribed:1,
+        avatar:1,
+        coverImage:1
+      }
+    }
+  ])
+
+  if (!channel?.length){
+    throw new apiError(404,"channel does not exits")
+  }
+
+  console.log(channel)
+
+  return res.status(200).json(new apiResponse(200,channel[0],"channel found"))
+})
+
 export { home, 
   register,
    login,
@@ -336,5 +403,6 @@ export { home,
    getCurrentUser,
    uploadAccountDetails,
    updateAvatar,
-   updateCoverImage
+   updateCoverImage,
+   getUserProfileInfo
   };

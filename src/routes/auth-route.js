@@ -1,7 +1,7 @@
 // routes.js
 
 import express from "express";
-import { changeCurrentPassword, getCurrentUser, home, login, logout, refreshAccessToken, register, updateAvatar, updateCoverImage, uploadAccountDetails } from "../controllers/auth-controller.js";
+import { changeCurrentPassword, getCurrentUser, getUserProfileInfo, getWatchHistroy, home, login, logout, refreshAccessToken, register, updateAvatar, updateCoverImage, uploadAccountDetails } from "../controllers/auth-controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import {verifyJWT} from "../middlewares/auth.middleware.js"
 
@@ -27,7 +27,9 @@ router.post('/refreshToken',refreshAccessToken)
 router.post('/changePassword',verifyJWT,changeCurrentPassword)
 router.get('/getUserInfo',verifyJWT,getCurrentUser)
 router.post('/updateaccount',verifyJWT,uploadAccountDetails)
-router.post('/updateAvatar',verifyJWT,upload.fields([{name:"avatar",maxCount:1}]),updateAvatar)
-router.post('/updateCoverImage',verifyJWT,upload.fields([{name:"coverImage",maxCount:1}]),updateCoverImage)
+router.patch('/updateAvatar',verifyJWT,upload.single("avatar"),updateAvatar)
+router.patch('/updateCoverImage',verifyJWT,upload.single("coverImage"),updateCoverImage)
+router.get("/c/:username",verifyJWT,getUserProfileInfo)
+router.get("/watch-histroy",verifyJWT,getWatchHistroy)
 
 export {router};

@@ -1,10 +1,9 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { User } from "../models/user.models.js";
 import { uploadfile } from "../utils/uploaderService.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import { apiError } from "../utils/apiError.js";
-import { json } from "express";
 import jwt from "jsonwebtoken";
 import {changeHashPassword} from "../utils/changeHashPassword.js";
 import { deleteAsset } from "../utils/deleteService.js";
@@ -394,6 +393,53 @@ const getUserProfileInfo=asyncHandler(async (req,res)=>{
   return res.status(200).json(new apiResponse(200,channel[0],"channel found"))
 })
 
+const  getWatchHistroy =asyncHandler(async (req,res)=>{
+  const getHistroy=await User.aggregate([
+    {
+      $match:{
+        _id: new mongoose.Types.ObjectId(req.user?._id)
+      }
+    },
+    {
+      $lookup:{
+        from:"videos",
+        localField:"watchHistroy",
+        foreignField:"$_id",
+        as:"watchHistroy",
+        pipeline:[
+          {
+            $lookup:{
+              from:"users",
+              localField:"owner",
+              foreignField:"_id",
+              as:"owner",
+              pipeline:[
+                {
+                  $project:{
+                    fullname:1,
+                    usernmae:1,
+                    avatar:1
+                  }
+                },
+                {
+                  $addFields:{
+                    owner:{
+                      $first:"$owner"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ])
+
+  return res.json(new apiResponse(200,getHistroy[0].getWatchHistroy,"get histroy is succesfully sent"))
+
+})
+
 export { home, 
   register,
    login,
@@ -404,5 +450,6 @@ export { home,
    uploadAccountDetails,
    updateAvatar,
    updateCoverImage,
-   getUserProfileInfo
+   getUserProfileInfo,
+   getWatchHistroy
   };

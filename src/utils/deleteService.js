@@ -1,7 +1,7 @@
 import {v2 as cloudinary} from "cloudinary"
-import { apiError } from "./apiError";
-import { User } from "../models/user.models";
-import { apiResponse } from "./apiResponse";
+import { apiError } from "./apiError.js";
+import { User } from "../models/user.models.js";
+import { apiResponse } from "./apiResponse.js";
 
 cloudinary.config({ 
     cloud_name: 'dm04opwdp', 

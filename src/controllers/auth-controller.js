@@ -285,6 +285,7 @@ const updateAvatar=asyncHandler(async (req,res)=>{
   //delete the previous image
   const deleteImage= await deleteAsset(req.user?.avatar)
 
+
   const user=await User.findByIdAndUpdate(
     req.user?._id,
     {
@@ -297,7 +298,7 @@ const updateAvatar=asyncHandler(async (req,res)=>{
     }
     ).select("-password -refreshToken")
 
-    return res.status(200).json(new apiResponse(200,{data:deleteImage,user:user.avatar},"updated avatar successfully"))
+    return res.status(200).json(new apiResponse(200,{deleteImage,user:user.avatar},"updated avatar successfully"))
 })
 
 const updateCoverImage=asyncHandler(async (req,res)=>{
@@ -305,11 +306,14 @@ const updateCoverImage=asyncHandler(async (req,res)=>{
   if (!coverImageLocalPath){
     throw new apiError(200,"uploading of avatar is failed")
   }
-  const coverImagePath=await uploadfile(avatarLocalPath)
+  const coverImagePath=await uploadfile(coverImageLocalPath)
 
   if (!coverImagePath.url){
     throw new apiError(200,"uploading of avatar is failed again")
   }
+
+    //delete the previous image
+  const deleteImage= await deleteAsset(req.user?.coverImage)
 
   const user=await User.findByIdAndUpdate(
     req.user?._id,
@@ -323,7 +327,7 @@ const updateCoverImage=asyncHandler(async (req,res)=>{
     }
     ).select("-password -refreshToken")
 
-    return res.status(200).json(new apiResponse(200,{user:user.avatar},"updated avatar successfully"))
+    return res.status(200).json(new apiResponse(200,{deleteImage,user:user.avatar},"updated avatar successfully"))
 })
 
 const getUserProfileInfo=asyncHandler(async (req,res)=>{
@@ -334,7 +338,7 @@ const getUserProfileInfo=asyncHandler(async (req,res)=>{
   const channel=await User.aggregate([
     {
       $match:{
-        username:username
+        username:username.username
       }
     },
     {
@@ -383,7 +387,7 @@ const getUserProfileInfo=asyncHandler(async (req,res)=>{
       }
     }
   ])
-
+  console.log(username)
   if (!channel?.length){
     throw new apiError(404,"channel does not exits")
   }
@@ -397,14 +401,14 @@ const  getWatchHistroy =asyncHandler(async (req,res)=>{
   const getHistroy=await User.aggregate([
     {
       $match:{
-        _id: new mongoose.Types.ObjectId(req.user?._id)
+        _id: new mongoose.Types.ObjectId(req.user._id)
       }
     },
     {
       $lookup:{
         from:"videos",
         localField:"watchHistroy",
-        foreignField:"$_id",
+        foreignField:"_id",
         as:"watchHistroy",
         pipeline:[
           {

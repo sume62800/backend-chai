@@ -14,11 +14,18 @@ const deleteAsset = async (assetPath)=>{
         if (!assetPath){
             throw new apiError(400,"Asset Path is not found")
         }
-        const deleteAsset= await cloudinary.v2.uploader.destroy(assetPath, {resource_type: "auto",invalidate:true})
+        
+        const public_id=assetPath?.split("/")
+        const id=public_id[public_id.length-1]
+        const cloud_id=id.split(".")
+        const a=cloud_id[0]
+        
 
-        console.log(deleteAsset.result)
+        const deleteAsset= await cloudinary.uploader.destroy(a, {resource_type: "image",invalidate:true})
 
-        return new apiResponse(200,{},"previous avatar image is successfully deleted!")
+     
+
+        return new apiResponse(200,{deleteAsset},"previous avatar image is successfully deleted!")
     } catch (error) {
         console.log("Deletion of Asset failed : ",error)
     }

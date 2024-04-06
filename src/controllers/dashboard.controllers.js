@@ -16,13 +16,22 @@ const getChannelStats = asyncHandler(async (req, res) => {
       },
     },
     {
-      $project: {
+      $group: {
+        _id: null,
         subscribersCount: {
-          $size: "$channel",
-        },
-      },
+          $sum: 1
+        }
+      }
     },
+    {
+      $project: {
+        _id: 0, // Exclude _id from the result
+        subscribersCount: 1 // Include only subscribersCount field
+      }
+    }
   ]);
+  
+
 
   const videoData = await Video.aggregate([
     {

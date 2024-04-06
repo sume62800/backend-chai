@@ -10,15 +10,15 @@ const createPlaylist = asyncHandler(async (req, res) => {
 
     //TODO: create playlist
 
-    PLaylist.create({
+    const playlistdata=await PLaylist.create({
         name,
         description,
         owner:req.user?._id
     })
 
-    await PLaylist.save()
+    
 
-    return res.status(200).json(new apiResponse(200,{},"playlist has been created successfully!")) 
+    return res.status(200).json(new apiResponse(200,{playlistdata},"playlist has been created successfully!")) 
 })
 
 const getUserPlaylists = asyncHandler(async (req, res) => {
@@ -52,35 +52,59 @@ const getPlaylistById = asyncHandler(async (req, res) => {
 })
 
 const addVideoToPlaylist = asyncHandler(async (req, res) => {
+    const { playlistId, videoId } = req.params;
 
-    const {playlistId, videoId} = req.params
+    try {
+  
+        const playlistDoc = await PLaylist.findById(playlistId);
 
-    const playlistDoc=await PLaylist.findById(playlistId)
+   
+        if (!playlistDoc) {
+            return res.status(404).json(new apiResponse(404, null, "Playlist not found"));
+        }
 
-    playlistDoc.video= playlistDoc.video.push(videoId)
+      
+        playlistDoc.videos.push(videoId);
 
-    const savedplaylistDoc=await playlistDoc.save().select("video")
 
-    return res.status(200).json(new apiResponse(200,{savedplaylistDoc},"video has been succesully added to playlist!")) 
-})
+        const savedPlaylistDoc = await playlistDoc.save();
+
+
+        return res.status(200).json(new apiResponse(200, { savedPlaylistDoc }, "Video has been successfully added to the playlist!"));
+    } catch (error) {
+
+        console.error(error);
+        return res.status(500).json(new apiResponse(500, null, "Internal Server Error"));
+    }
+});
+
 
 const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
-    const {playlistId, videoId} = req.params
-    // TODO: remove video from playlist
+    const { playlistId, videoId } = req.params;
 
-    const playlistDoc=await PLaylist.findById(playlistId)
+    try {
 
-    let data=playlistDoc.video
+        const playlistDoc = await PLaylist.findById(playlistId);
 
-    data = data.filter(item => item !== videoId);
+        if (!playlistDoc) {
+            return res.status(404).json(new apiResponse(404, null, "Playlist not found"));
+        }
 
-    playlistDoc.video = data
+        playlistDoc.videos = playlistDoc.videos.filter(item => item.toString() !== videoId);
+        console.log(playlistDoc.videos)
 
-    const updatedDoc=await playlistDoc.save()
-    
-    return res.status(200).json(new apiResponse(200,{updatedDoc},"video has been succesully removed from playlist!")) 
+ 
+        const updatedDoc = await playlistDoc.save();
+        
+  
+        return res.status(200).json(new apiResponse(200, { updatedDoc }, "Video has been successfully removed from the playlist!"));
+    } catch (error) {
 
-})
+        console.error(error);
+        return res.status(500).json(new apiResponse(500, null, "Internal Server Error"));
+    }
+});
+
 
 const deletePlaylist = asyncHandler(async (req, res) => {
     const {playlistId} = req.params
@@ -88,13 +112,13 @@ const deletePlaylist = asyncHandler(async (req, res) => {
 
     const playlistDoc=await PLaylist.findByIdAndDelete(playlistId)
     
-    return res.status(200).json(new apiResponse(200,{playlistDoc},"playList has been succesully deleted!")) 
+    return res.status(200).json(new apiResponse(200,{msg:"success"},"playList has been succesully deleted!")) 
 })
 
 const updatePlaylist = asyncHandler(async (req, res) => {
     const {playlistId} = req.params
     const {name, description} = req.body
-    //TODO: update playlist
+
     const updatedPlayListData=await PLaylist.findByIdAndUpdate(
         playlistId,
         {

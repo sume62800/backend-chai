@@ -14,7 +14,7 @@ app.use(cookiesParser())
 
 //routes import
 import { router } from './routes/auth-route.js';
-// import healthcheckRouter from "./routes/healthcheck.routes.js"
+import healthcheckRouter from "./routes/healthcheck.routes.js"
 import tweetRouter from "./routes/tweet.routes.js"
 import subscriptionRouter from "./routes/subscriptions.routes.js"
 import {router as videoRouter} from "./routes/video.routes.js"
@@ -25,7 +25,7 @@ import dashboardRouter from "./routes/dashboard.routes.js"
 
 //routes declaration
 app.use("/api/v1/users",router);
-// app.use("/api/v1/healthcheck", healthcheckRouter)
+app.use("/api/v1/healthcheck", healthcheckRouter)
 app.use("/api/v1/tweets", tweetRouter)
 app.use("/api/v1/subscriptions", subscriptionRouter)
 app.use("/api/v1/videos", videoRouter)

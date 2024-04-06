@@ -9,7 +9,7 @@ cloudinary.config({
     api_secret: 'onluR1hIe6e-0a86uPNMOxKy7A4' 
   });
 
-const deleteAsset = async (assetPath)=>{
+const deleteVideoAsset = async (assetPath)=>{
     try {
         
         if (!assetPath){
@@ -22,14 +22,14 @@ const deleteAsset = async (assetPath)=>{
         const a=cloud_id[0]
         
 
-        const deleteAsset= await cloudinary.uploader.destroy(a, {resource_type: "image"})
+        const deleteAsset= await cloudinary.uploader.destroy(a, {resource_type: "video"})
 
      
 
-        return new apiResponse(200,{deleteAsset},"previous avatar image is successfully deleted!")
+        return new apiResponse(200,{deleteAsset},"previous avatar video is successfully deleted!")
     } catch (error) {
         console.log("Deletion of Asset failed : ",error)
     }
 }
 
-export {deleteAsset}
+export {deleteVideoAsset}

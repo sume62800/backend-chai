@@ -440,7 +440,7 @@ const  getWatchHistroy =asyncHandler(async (req,res)=>{
     }
   ])
 
-  return res.json(new apiResponse(200,getHistroy[0].getWatchHistroy,"get histroy is succesfully sent"))
+  return res.json(new apiResponse(200,{getHistroy:getHistroy[0].watchHistroy},"get histroy is succesfully sent"))
 
 })
 

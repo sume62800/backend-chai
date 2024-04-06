@@ -1,17 +1,21 @@
 import mongoose, {isValidObjectId} from "mongoose"
-import {Video} from "../models/video.model.js"
-import {User} from "../models/user.model.js"
+import {Video} from "../models/video.models.js"
 import {apiError} from "../utils/apiError.js"
 import {apiResponse} from "../utils/apiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
 import {uploadfile} from "../utils/uploaderService.js"
 import { uploadVideo } from "../utils/uploadVideoService.js"
 import { deleteAsset } from "../utils/deleteService.js"
+import { deleteVideoAsset } from "../utils/deletevideo.js"
+
 
 
 const getAllVideos = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
+    const { page = 1, limit = 10, sortBy, sortType, userId } = req.query
     //TODO: get all videos based on query, sort, pagination
+    // page is not working and please resolve this issue
+
+    let query="programming is the future"
 
     const allVideos=await Video.aggregate([
         {
@@ -32,9 +36,9 @@ const getAllVideos = asyncHandler(async (req, res) => {
         {
             $limit:limit
         },
-        {
-            $skip:page
-        },
+        // {
+        //     $skip:page
+        // },
     ])
 
     if (!allVideos){
@@ -62,13 +66,16 @@ const publishAVideo = asyncHandler(async (req, res) => {
         throw new apiError(400,"uploading is failed!")
     }
 
-    
-    const durationInSeconds = videoPath.result.eager[0].video_info.duration;
-    console.log("Duration of the video:", durationInSeconds);
 
-    const video=Video.create({
-        videoFile:videoPath,
-        thumbnail:thumbnailPath,
+    
+
+    
+    const durationInSeconds = videoPath.duration
+
+
+    const video= await Video.create({
+        videoFile:videoPath.url,
+        thumbnail:thumbnailPath.url,
         title:title,
         description:description,
         duration:durationInSeconds,
@@ -77,9 +84,9 @@ const publishAVideo = asyncHandler(async (req, res) => {
         owner:req.user?._id
     })
 
-    const videoData =await videoData.save()
+    
 
-    return res.status(400).json(new apiError(400,"video published succesfully"))
+    return res.status(200).json(new apiResponse(200,{video},"video published succesfully"))
 
 })
 
@@ -112,7 +119,7 @@ const updateVideo = asyncHandler(async (req, res) => {
         {
             title,
             description,
-            thumbnail:thumbnailPath
+            thumbnail:thumbnailPath.url
         },
         {
             new:true
@@ -128,6 +135,7 @@ const deleteVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
 
     //TODO: delete video
+    // delete the thumbnail
 
     const requiredVideo= await Video.findById(videoId)
 
@@ -135,11 +143,13 @@ const deleteVideo = asyncHandler(async (req, res) => {
         throw new apiError(200,"video does not exist")
     }
 
-    const result= await deleteAsset(requiredVideo.videoFile)
+    console.log(requiredVideo.videoFile,requiredVideo.thumbnail)
+    const result= await deleteVideoAsset(requiredVideo.videoFile)
+    const resultThumbnail= await deleteAsset(requiredVideo.thumbnail)
 
     const resultOfDatabase=await Video.findByIdAndDelete(videoId)
 
-    return res.status(200).json(new apiResponse(200, {result,resultOfDatabase},"deletion of video successsfully done!"))
+    return res.status(200).json(new apiResponse(200, {resultThumbnail,result,resultOfDatabase},"deletion of video successsfully done!"))
 })
 
 const togglePublishStatus = asyncHandler(async (req, res) => {

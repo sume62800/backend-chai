@@ -1,6 +1,6 @@
 import mongoose, { isValidObjectId } from "mongoose"
-import {Tweet} from "../models/tweet.model.js"
-import {User} from "../models/user.model.js"
+import {Tweet} from "../models/tweet.models.js"
+import {User} from "../models/user.models.js"
 import {apiError} from "../utils/apiError.js"
 import {apiResponse} from "../utils/apiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
@@ -10,29 +10,28 @@ const createTweet = asyncHandler(async (req, res) => {
 
     const {content}=req.body
 
-    const tweet = Tweet.create({
+    const tweet =await  Tweet.create({
         owner:req.user?._id,
         content
     })
 
-    const tweetData=await tweet.save()
 
-    return res.status(200).json(new apiResponse(200,{tweetData},"tweet"))
+    return res.status(200).json(new apiResponse(200,{tweet},"tweet"))
 })
 
 const getUserTweets = asyncHandler(async (req, res) => {
     // TODO: get user tweets
 
-    const userTweet=Tweet.aggregate([
+    const userTweet= await Tweet.aggregate([
         {
             $match:{
-                owner: new  new mongoose.Types.ObjectId(req.user._id)
+                owner:  new mongoose.Types.ObjectId(req.user._id)
             }
         },
         {
             $addFields:{
                 owner:{
-                  $first:"$owner"
+                  $first:"$userTweet"  // need to learn this pipeline
                 }
             }
         },
@@ -44,10 +43,11 @@ const getUserTweets = asyncHandler(async (req, res) => {
 const updateTweet = asyncHandler(async (req, res) => {
     //TODO: update tweet
 
-    const {tweetID,content}=req.params
+    const {tweetId}= req.params
+    const {content}= req.body
 
     const updatedTweet=await Tweet.findByIdAndUpdate(
-        tweetID,
+        tweetId,
         {
             content
         },
@@ -62,8 +62,8 @@ const updateTweet = asyncHandler(async (req, res) => {
 const deleteTweet = asyncHandler(async (req, res) => {
     //TODO: delete tweet
 
-    const {tweetID}=req.params
-    const resultOfDatabase=await Tweet.findByIdAndDelete(tweetID)
+    const {tweetId}=req.params
+    const resultOfDatabase=await Tweet.findByIdAndDelete(tweetId)
 
     return res.status(200).json(new apiResponse(200,{resultOfDatabase},"user tweet has been deleted!")) 
 })

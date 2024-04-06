@@ -22,4 +22,4 @@ const likesSchema = mongoose.Schema({
 
 
 
-export const Like=mongoose.model("Like",commentSchema)
+export const Like=mongoose.model("Like",likesSchema)

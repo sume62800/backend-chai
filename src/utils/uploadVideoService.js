@@ -1,6 +1,7 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 
+
 cloudinary.config({
   cloud_name: "dm04opwdp",
   api_key: "989232359868522",
@@ -18,16 +19,13 @@ const uploadVideo = async (localFilePath) => {
     if (!localFilePath) return null;
     //upload the file on cloudinary
     const response = await cloudinary.uploader.upload(localFilePath, {
-      resource_type: "auto",
-      eager: [
-        {
-          format: "json",
-          streaming_profile: "full_hd", // Specify streaming profile to get video metadata
-        },
-      ],
+      resource_type: "auto"
     });
     // file has been uploaded successfull
     console.log("file is uploaded on cloudinary ", response.url);
+
+
+
     fs.unlinkSync(localFilePath);
     return response;
   } catch (error) {

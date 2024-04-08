@@ -8,13 +8,13 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 // this whole routing does not work at all 
 
 const toggleSubscription = asyncHandler(async (req, res) => {
-    const {channelId} = req.params
+    const {subscriberId} = req.params
     // TODO: toggle subscription
     // this is wrong 
 
     const subscription=await Subscription.create({
         subscriber:req.user?._id,
-        channel:channelId
+        channel:subscriberId
     })
 
     // const subscriberDoc=await Subscription.aggregate([
@@ -38,9 +38,35 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
     const subscriberList=await Subscription.aggregate([
         {
             $match:{
-                channel: new mongoose.Types.ObjectId(subscriberId)
+                subscriber: new mongoose.Types.ObjectId(subscriberId)
             }
         },
+        {
+            $lookup:{
+                from:"users",
+                localField:"subscriber",
+                foreignField:"_id",
+                as:"subscriber_profile",
+                pipeline:([
+                    {
+                        $project:{
+                            _id:0,
+                            fullname:1,
+                            avatar:1,
+                            username:1
+                        }
+                    }
+                ])
+            }
+        },
+        {
+            $project:{
+                _id:0,
+                createdAt:1,
+                subscriber_profile:1,
+            }
+        },
+
         // {
         //     $limit:limit
         // },
@@ -61,9 +87,34 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
     const channelList=await Subscription.aggregate([
         {
             $match:{
-                subscriber: new mongoose.Types.ObjectId(subscriberId)
+                channel: new mongoose.Types.ObjectId(subscriberId)
             }
         },
+        {
+            $lookup:{
+                from:"users",
+                localField:"channel",
+                foreignField:"_id",
+                as:"subscriber_profile",
+                pipeline:([
+                    {
+                        $project:{
+                            _id:0,
+                            fullname:1,
+                            avatar:1,
+                            username:1
+                        }
+                    }
+                ])
+            }
+        },
+        {
+            $project:{
+                _id:0,
+                createdAt:1,
+                subscriber_profile:1,
+            }
+        }
         // {
         //     $limit:limit
         // },

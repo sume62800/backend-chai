@@ -7,7 +7,7 @@ import { apiResponse } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 const getChannelStats = asyncHandler(async (req, res) => {
-  // TODO: Get the channel stats like total video views, total subscribers, total videos, total likes etc.
+  // TODO: Get the channel stats like //total video views, //total subscribers, //total videos, //total likes etc.
 
   const subscriberData = await Subscription.aggregate([
     {
@@ -30,8 +30,6 @@ const getChannelStats = asyncHandler(async (req, res) => {
       }
     }
   ]);
-  
-
 
   const videoData = await Video.aggregate([
     {
@@ -40,43 +38,80 @@ const getChannelStats = asyncHandler(async (req, res) => {
       },
     },
     {
-        $lookup:{
-            from:"likes",
-            localField:"_id",
-            foreignField:"video",
-            as:"likeData",
-            pipeline:[
-                {
-                    $project:{
-                        totalLikes: { $sum: "$likedBy" }
-                    }
-                }
-            ]
+      $group:{
+        _id:"$owner",
+        videoCount:{
+          $sum:1
         }
+      }
     },
     {
-      $project: {
-        videoCount: {
-          $size: "$videoFile",
-        },
-        totalViews: { $sum: "$views" },
-      },
-    },
+      $project:{
+        _id:0,
+        videoCount:1
+      }
+    }
+
   ]);
 
-  return res.json(new apiResponse(200,{videoData,subscriberData},"get histroy is succesfully sent"))
+  const likeVideoData =await Like.aggregate([
+    {
+      $match:{
+        likedBy:new mongoose.Types.ObjectId(req.user?._id)
+      }
+    },
+    {
+      $group:{
+        _id:"$video",
+        likedCount:{
+          $sum:1
+        }
+      }
+    },
+    {
+      $project:{
+        _id:0,
+        likedCount:1
+      }
+    }
+    
+  ])
+
+const viewsData =await Video.aggregate([
+  {
+    $group: {
+      _id: null, // Group by video ID
+      totalViews: { $sum: "$views" } // Sum up views for each video
+    }
+  },
+  {
+    $project:{
+      _id:0,
+      totalViews:1
+    }
+  }
+])
+
+  return res.json(new apiResponse(200,{videoData,subscriberData,likeVideoData,viewsData},"total subscriber count"))
 });
 
 const getChannelVideos = asyncHandler(async (req, res) => {
   // TODO: Get all the videos uploaded by the channel
-
+  console.log(req.user?._id)
   const uploadedVideo = await Video.aggregate([
     {
-      owner: new mongoose.Types.ObjectId(req.user?._id),
+      $match: {
+        owner:new  mongoose.Types.ObjectId(req.user?._id)
+      }
     },
     {
       $project: {
         videoFile: 1,
+        thumbnail:1,
+        title:1,
+        description:1,
+        views:1,
+        createdAt:1
       },
     },
   ]);

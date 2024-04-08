@@ -11,7 +11,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
 
     // incomplete
 
-    Comment.aggregate([
+    const getComment=await Comment.aggregate([
         {
             $match:{
                 video:new mongoose.Types.ObjectId(videoId)
@@ -23,41 +23,52 @@ const getVideoComments = asyncHandler(async (req, res) => {
                 localField:"owner",
                 foreignField:"_id",
                 as:"owner_data",
-                pipeline:[{
-                    $project:{
-                        username:1,
-                        avatar:1
+                pipeline:[
+                    {
+                      $project:{
+                        usernmae:1,
+                        avatar:1,
+                        createdAt:1
+                      }
                     }
-                }]
-
+                ]
+                    
+            
+            }
+        },
+        {
+            $lookup:{
+                from:"likes",
+                localField:"_id",
+                foreignField:"comment",
+                as:"likes_data",
             }
         },
         {
             $project:{
                 content:1,
-                owner:{
-                    
-                }
+                owner_data:1,
+                number_of_likes:{ $size: "$likes_data" }
             }
         }
     ])
+
+    return res.status(200).json(new apiResponse(200,{getComment},"comments has been fetched!"))
 
 })
 
 const addComment = asyncHandler(async (req, res) => {
     // TODO: add a comment to a video
+    const {videoId}=req.params
+    const {content}=req.body
 
-    const {content, videoId}=req.body
-
-    const comment=Comment.create({
+    const comment= await Comment.create({
         content,
         video:videoId,
         owner: req.user?._id
     })
 
-    await comment.save()
-
-    return res.status(200).json(new apiResponse(200,{},"comment has sent sent!"))
+    return res.status(200).json(new apiResponse(200,{comment},"comment has sent sent!"))
 })
 
 const updateComment = asyncHandler(async (req, res) => {
@@ -65,6 +76,7 @@ const updateComment = asyncHandler(async (req, res) => {
 
     const {commentId}=req.params
     const {content}=req.body
+    console.log(commentId)
 
     const updatedComment=await Comment.findByIdAndUpdate(
         commentId,
@@ -74,20 +86,28 @@ const updateComment = asyncHandler(async (req, res) => {
         {
             new:true
         }
-    ).select("content")
+    )
 
     return res.status(200).json(new apiResponse(200,{updatedComment},"comment updated!"))
 })
 
 const deleteComment = asyncHandler(async (req, res) => {
-    // TODO: delete a comment
+    try {
+        const { commentId } = req.params;
 
-    const {commentId}=req.params
+        const result = await Comment.findByIdAndDelete(commentId);
 
-    const result =await findByIdAndDelete(commentId)
+        if (!result) {
+            return res.status(404).json(new apiResponse(404, null, "Comment not found"));
+        }
 
-    res.status(200).json(new apiResponse(200,{result},"comment deleted!"))
-})
+        res.status(200).json(new apiResponse(200, { result }, "Comment deleted!"));
+    } catch (error) {
+        console.error(error);
+        res.status(500).json(new apiResponse(500, null, "Internal Server Error"));
+    }
+});
+
 
 export {
     getVideoComments, 

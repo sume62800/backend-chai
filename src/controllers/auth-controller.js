@@ -16,7 +16,7 @@ const home = (req, res) => {
 
 const register = asyncHandler(async (req, res) => {
   const { fullname, email, username, password } = req.body;
-  console.log(req.files);
+  // console.log(req.files);
 
   if (
     [fullname, email, username, password].some((field) => field?.trim() === "")
@@ -104,30 +104,26 @@ const generateAccessAndRefreshToken = async (userid) => {
 };
 
 const login = asyncHandler(async (req, res) => {
-  const { username, email, password } = req.body;
+  const { username, password } = req.body;
 //   console.log(password);
 
   if (!username) {
     throw new apiError(400, "username or email is required");
   }
-  const existUser = await User.findOne({ $or: [{ username }, { email }] });
+  const existUser = await User.findOne({ $or: [{ username }] });
   if (!existUser) {
     throw new apiError(400, "user not found");
   }
 
-//   const checkpassword = await existUser.isPasswordCorrect(password);
+  const checkpassword = await existUser.isPasswordCorrect(password);
 
-//   if (!checkpassword) {
-//     throw new apiError(400, "password is incorrect");
-//   }
+  if (!checkpassword) {
+    throw new apiError(400, "password is incorrect");
+  }
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
     existUser._id
   );
-    
-
-  accessToken
-  refreshToken
  
   const loginUser = await User.findById(existUser._id).select("-password -refreshToken")
  

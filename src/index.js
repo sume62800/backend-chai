@@ -1,7 +1,4 @@
 import dotenv from 'dotenv';
-import express from 'express';
-import cors from 'cors';
-import { router } from './routes/auth-route.js'; // Use .js extension for ES modules
 import dbcon from './db/index.js';
 import {app} from "./app.js"
 

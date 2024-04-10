@@ -1,5 +1,3 @@
-""
-
 **Aim of This Project**
 
 1. **User Authentication:**

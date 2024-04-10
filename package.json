@@ -1,7 +1,7 @@
 {
-  "name": "backend",
+  "name": "stream-wave-backend",
   "version": "1.0.0",
-  "description": "this is the backend of my cliend app",
+  "description": "Stream Wave: Dive into dynamic video sharing. Discover, upload, and engage with trending content effortlessly. Your gateway to endless entertainment.",
   "main": "index.js",
   "type": "module",
   "scripts": {

@@ -109,7 +109,7 @@ These are the Cloudinary credentials. Replace them with your Cloudinary cloud na
 
 After configuring the `.env` file, save it in the root directory of your project. Ensure you keep this file secure and don't expose it publicly, as it contains sensitive information. Once configured, you can now clone the project and run it on your machine.
 
-3. Start the server (`npm start`).
+3. Start the server (`nodemon`).
 4. Utilize the provided API endpoints for user authentication, file handling, and user data operations.
 
 **Conclusion:**
